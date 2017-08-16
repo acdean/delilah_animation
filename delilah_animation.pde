@@ -30,20 +30,21 @@ void draw() {
   // delilah
   fill(255, 192, 192);
   rect(100, 200, 400, 400);
-  image(delilah, 100, 200);
+  image(delilah, 100, 200, delilah.width / 2, delilah.height / 2);
 
   // defrost queue
+  fill(192, 192, 192);
+  rect(600, 250, 200, 100);
   fill(192, 255, 192);
-  rect(600, 200, 200, 400);
-  image(defrost, 600, 200);
+  rect(600, 400, 200, 200);
+  image(defrost, 600, 400, defrost.width / 2, defrost.height / 2);
 
   // route
+  stroke(128);
   line(INPUT_X, 300, 900, 300);
-  line(900, 300, 900, 100);
-  line(900, 100, 700, 100);
-  line(700, 100, 700, 500);
-  line(700, 500, INPUT_X, 500);
-
+  line(700, 300, 700, 500);
+  line(900, 500, 900, 300);
+  line(900, 500, INPUT_X, 500);
   line(INPUT_X, INPUT_Y, INPUT_X, 700);
 
   strokeWeight(2);
@@ -65,7 +66,8 @@ void draw() {
   // add a request every 30 frames for the first 3000 frames
   // or if the key is pressed
   if (frameCount % 30 == 1) {
-    if (frameCount < 3000 || keyPressed) {
+//    if (frameCount < 3000 || keyPressed) {
+    if (frameCount < 300 || keyPressed) {
       requests.add(new Request(0));
     }
   }
@@ -75,26 +77,29 @@ void draw() {
   }
 }
 
+Route[] routes = {
+  new Route(0, 100, INPUT_X, INPUT_X, INPUT_Y, 300),    // in
+  new Route(100, 300, INPUT_X, 700, 300, 300),          // to defrost (300 is defrost point)
+  new Route(300, 400, 700, 700, 300, 500),              // out of defrost
+  new Route(400, 500, 700, 900, 500, 500),              // loop right
+  new Route(500, 600, 900, 900, 500, 300),              // loop up
+  new Route(600, 700, 900, 700, 300, 300),              // loop left
+  new Route(700, 800, 700, 700, 300, 500),              // down again
+  new Route(800, 1000, 700, 300, 500, 500),             // thawed left
+  new Route(1000, 1100, INPUT_X, INPUT_X, 500, 700),    // balham
+  // this next one is disjoint
+  new Route(2000, 2200, INPUT_X, INPUT_X, 300, 700),    // straight through
+};
+
 class Request {
+  static final float MAX_SPEED = 0.5;
+
   float x, y;
   boolean frozen = true;
   int lifetime;
   float rx, ry;
   float dx, dy;
   int index = 0;
-
-  Route[] routes = {
-    new Route(0, 100, INPUT_X, INPUT_X, INPUT_Y, 300),    // in
-    new Route(100, 400, INPUT_X, 900, 300, 300),          // to defrost
-    new Route(400, 500, 900, 900, 300, 100),              // loop up
-    new Route(500, 600, 900, 700, 100, 100),              // loop left
-    new Route(600, 700, 700, 700, 100, 300),              // loop down
-    new Route(700, 800, 700, 700, 300, 500),              // thawed down
-    new Route(800, 1000, 700, INPUT_X, 500, 500),         // thawed left
-    new Route(1000, 1100, INPUT_X, INPUT_X, 500, 700),    // balham
-    // this next one is disjoint
-    new Route(2000, 2200, INPUT_X, INPUT_X, 300.0, 700),   // straight through
-  };
 
   Request(int i) {
     init();
@@ -129,17 +134,19 @@ class Request {
     }
     
     // defrost anywhere in the loop
-    if (lifetime > 0 && lifetime <= 700 ) {
+    if (lifetime > 100 && lifetime <= 700 ) {
       if (random(1000) < 1) {
         frozen = false;
       }
     }
 
-    // break out of loop if defrosted
-    if (lifetime == 700 && frozen) {
-      lifetime = 300;
+    // looping logic
+    if (lifetime == 400 && !frozen) {
+      lifetime = 800;
     }
-    // break out of loop if defrosted
+    if (lifetime == 800 && frozen) {
+      lifetime = 400;
+    }
     if (lifetime == 100 && !frozen) {
       lifetime = 2000;
     }
@@ -154,20 +161,7 @@ class Request {
     } else {
       img = fire[index];
     }
-    image(img, x, y);
-    /*
-    pushMatrix();
-    translate(x, y, 30);
-    if (frozen) {
-      fill(192, 192, 255); // blue
-    } else {
-      fill(255, 255, 192);  // grey
-    }
-    rotateX(rx);
-    rotateY(ry);
-    box(40);
-    popMatrix();
-    */
+    image(img, x, y, img.width * .75, img.height * .75);
   }
 }
 
