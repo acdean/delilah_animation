@@ -190,7 +190,7 @@ class Request {
     }
     pushMatrix();
     translate(x, y);
-    rotate(5 * radians(sin(lifetime / 2.0)));
+    rotate(5 * radians(sin(lifetime / 8.0)));
     image(img, 0, 0, img.width * .75, img.height * .75);
     popMatrix();
   }
