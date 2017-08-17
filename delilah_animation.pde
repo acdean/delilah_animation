@@ -8,6 +8,8 @@ ArrayList<Request> requests = new ArrayList<Request>();
 PImage[] ice = new PImage[10];
 PImage[] fire = new PImage[10];
 PImage delilah, defrost, question;
+PImage tick, cross, sqs;
+Check check1, check2;
 
 void setup() {
   size(1000, 800, P2D);
@@ -19,6 +21,11 @@ void setup() {
   question = loadImage("question.png");
   delilah = loadImage("delilah.png");
   defrost = loadImage("defrost.png");
+  tick = loadImage("tick.png");
+  cross = loadImage("cross.png");
+  sqs = loadImage("sqs.png");
+  check1 = new Check(150, 300); // A = 200, 300
+  check2 = new Check(850, 400); // D = 800, 400
 }
 
 void draw() {
@@ -31,10 +38,6 @@ void draw() {
   fill(255, 192, 192);
   rect(50, 200, 300, 400);
   image(delilah, 50, 200, delilah.width / 2, delilah.height / 2);
-
-  // SQS
-  fill(192, 192, 192);
-  rect(400, 250, 200, 100);
 
   // defrost
   fill(192, 255, 192);
@@ -51,12 +54,20 @@ void draw() {
   line(800, 400, 500, 400);
   line(500, 400, 500, 300);
 
-  strokeWeight(2);
+  // SQS
   imageMode(CENTER);
+  image(sqs, X0, Y0);  // input
+  image(sqs, XG, YG);  // defrost
+  image(sqs, X1, Y1);  // output
+
+  strokeWeight(2);
   for (Request request : requests) {
     request.move();
     request.draw();
   }
+  
+  check1.draw();
+  check2.draw();
 
   // delete the dead nodes
   //println("Requests: " + requests.size());
@@ -168,12 +179,18 @@ class Request {
 
     // looping logic
     // If at A and unfrozen then towards 1
-    if (lifetime == PA && !frozen) {
-      lifetime = PA2;
+    if (lifetime == PA) {
+      check1.on(frozen);
+      if (!frozen) {
+        lifetime = PA2;
+      }
     }
     // If at D and unfrozen move towards E
-    if (lifetime == PD && !frozen) {
-      lifetime = PD2;
+    if (lifetime == PD) {
+      check2.on(frozen);
+      if (!frozen) {
+        lifetime = PD2;
+      }
     }
     // If at G then loop
     if (lifetime == PG2) {
@@ -220,6 +237,36 @@ class Route {
       return p;
     } else {
       return null;
+    }
+  }
+}
+
+// the two checkpoints flash up their decisions
+class Check {
+  
+  final int LIFETIME = 15;
+  int counter;
+  PImage img;
+  int x, y;
+  
+  Check(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  
+  void on(boolean frozen) {
+    if (frozen) {
+      img = cross;
+    } else {
+      img = tick;
+    }
+    counter = LIFETIME;
+  }
+  
+  void draw() {
+    if (counter > 0) {
+      counter--;
+      image(img, x, y, img.width / 3, img.height / 3);
     }
   }
 }
