@@ -84,24 +84,24 @@ void draw() {
 }
 
 // 0              0 = 200, 100 - 0
-// #              A = 200, 300 - 1, 20
-// A####G####B    B = 800, 300 - 5
-// #    #    #    C = 500, 400 - 8
-// #    C####D    D = 800, 400 - 6, 10
-// #         #    E = 800, 500 - 11
-// F#########E    F = 200, 500 - 15
-// #              G = 500, 300 - 3, 9 *
-// 1              1 = 200, 700 - 16, 23
+// #              A = 200, 300 - 2, 30
+// A####G####B    B = 800, 300 - 8
+// #    #    #    C = 500, 400 - 12
+// #    C####D    D = 800, 400 - 9, 14
+// #         #    E = 800, 500 - 15
+// F#########E    F = 200, 500 - 21
+// #              G = 500, 300 - 3, 13 *
+// 1              1 = 200, 700 - 16, 34
 
 static float X0 = 200, Y0 = 100, P0 = 0;
-static float XA = 200, YA = 300, PA = 100, PA2 = 2000;
-static float XB = 800, YB = 300, PB = 500;
-static float XC = 500, YC = 400, PC = 800;
-static float XD = 800, YD = 400, PD = 600, PD2 = 1000;
-static float XE = 800, YE = 500, PE = 1100;
-static float XF = 200, YF = 500, PF = 1500;
-static float XG = 500, YG = 300, PG = 300, PG2 = 900;
-static float X1 = 200, Y1 = 700, P1 = 1600, P12 = 2300;
+static float XA = 200, YA = 300, PA = 200, PA2 = 3000;
+static float XB = 800, YB = 300, PB = 800;
+static float XC = 500, YC = 400, PC = 1200;
+static float XD = 800, YD = 400, PD = 900, PD2 = 1400;
+static float XE = 800, YE = 500, PE = 1500;
+static float XF = 200, YF = 500, PF = 2100;
+static float XG = 500, YG = 300, PG = 500, PG2 = 1300;
+static float X1 = 200, Y1 = 700, P1 = 2300, P12 = 3400;
 
 Route[] routes = {
   new Route(P0, PA, X0, Y0, XA, YA),    // 0 - A
@@ -118,7 +118,7 @@ Route[] routes = {
 };
 
 class Request {
-  static final float MAX_SPEED = 0.5;
+//  static final float MAX_SPEED = 0.5;
 
   float x, y;
   boolean frozen = true;
@@ -148,7 +148,7 @@ class Request {
   }
 
   void move() {
-    lifetime++;
+    lifetime += 2;
     
     // jiggery pokery here
     for (Route route : routes) {
@@ -183,14 +183,16 @@ class Request {
 
   void draw() {
     PImage img;
-//    rx += dx;
-//    ry += dy;
     if (frozen) {
       img = ice[index];
     } else {
       img = fire[index];
     }
-    image(img, x, y, img.width * .75, img.height * .75);
+    pushMatrix();
+    translate(x, y);
+    rotate(5 * radians(sin(lifetime / 2.0)));
+    image(img, 0, 0, img.width * .75, img.height * .75);
+    popMatrix();
   }
 }
 
