@@ -10,6 +10,7 @@ PImage[] fire = new PImage[10];
 PImage delilah, defrost, question;
 PImage tick, cross, sqs;
 Check check1, check2;
+boolean pause = false;
 
 void setup() {
   size(1000, 800, P2D);
@@ -29,6 +30,9 @@ void setup() {
 }
 
 void draw() {
+  if (pause) {
+    return;
+  }
   background(255);
   stroke(0);
   strokeWeight(5);
@@ -81,7 +85,7 @@ void draw() {
   // add a request every 30 frames for the first 3000 frames
   // or if the key is pressed
   if (frameCount % 30 == 1) {
-    if (frameCount < 3000 || keyPressed) {
+    if (frameCount < 3000) {
       requests.add(new Request(0));
     }
   }
@@ -268,5 +272,15 @@ class Check {
       counter--;
       image(img, x, y, img.width / 3, img.height / 3);
     }
+  }
+}
+
+void keyReleased() {
+  if (key == ' ') {
+    // more
+    requests.add(new Request(0));
+  } else {
+    // (un)pause
+    pause = !pause;
   }
 }
