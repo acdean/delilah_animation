@@ -7,7 +7,7 @@ PShape shape = null;
 ArrayList<Request> requests = new ArrayList<Request>();
 PImage[] ice = new PImage[10];
 PImage[] fire = new PImage[10];
-PImage delilah, defrost, question;
+PImage delilah, defrost, unknown, green;
 PImage tick, cross, sqs;
 Check check1, check2;
 boolean pause = false;
@@ -19,14 +19,15 @@ void setup() {
     ice[i] = loadImage("ice" + i + ".png");
     fire[i] = loadImage("fire" + i + ".png");
   }
-  question = loadImage("question.png");
+  unknown = loadImage("unknown.png");
+  green = loadImage("green.png");
   delilah = loadImage("delilah.png");
   defrost = loadImage("defrost.png");
   tick = loadImage("tick.png");
   cross = loadImage("cross.png");
   sqs = loadImage("sqs.png");
   check1 = new Check(150, 300); // A = 200, 300
-  check2 = new Check(850, 400); // D = 800, 400
+  check2 = new Check(850, 300); // D = 800, 300
 }
 
 void draw() {
@@ -55,8 +56,8 @@ void draw() {
   line(800, 300, 800, 500);
   line(800, 500, 200, 500);
 
-  line(800, 400, 500, 400);
-  line(500, 400, 500, 300);
+  //line(800, 400, 500, 400);
+  //line(500, 400, 500, 300);
 
   // SQS
   imageMode(CENTER);
@@ -86,48 +87,37 @@ void draw() {
   // or if the key is pressed
   if (frameCount % 30 == 1) {
     if (frameCount < 3000) {
-      requests.add(new Request(0));
+      requests.add(new Request());
     }
   }
-
-  //if (requests.size() == 0) {
-  //  noLoop();
-  //} else {
-  //  // debug
-  //  println(requests.get(0).lifetime);
-  //}
 }
 
-// 0              0 = 200, 100 - 0
-// #              A = 200, 300 - 2, 30
-// A####G####B    B = 800, 300 - 8
-// #    #    #    C = 500, 400 - 12
-// #    C####D    D = 800, 400 - 9, 14
-// #         #    E = 800, 500 - 15
-// F#########E    F = 200, 500 - 21
-// #              G = 500, 300 - 3, 13 *
-// 1              1 = 200, 700 - 16, 34
+// 0          0 = 200, 100 - 0
+// #          A = 200, 300 - 2, 30
+// A##G##B    B = 800, 300 - 8
+// #     #    
+// #     #    
+// F#####E    E = 800, 500 - 15
+// #          F = 200, 500 - 21
+// 1          G = 500, 300 - 3, 13 *
+//            1 = 200, 700 - 16, 34
 
 static float X0 = 200, Y0 = 100, P0 = 0;
 static float XA = 200, YA = 300, PA = 200, PA2 = 3000;
-static float XB = 800, YB = 300, PB = 800;
-static float XC = 500, YC = 400, PC = 1200;
-static float XD = 800, YD = 400, PD = 900, PD2 = 1400;
-static float XE = 800, YE = 500, PE = 1500;
-static float XF = 200, YF = 500, PF = 2100;
-static float XG = 500, YG = 300, PG = 500, PG2 = 1300;
-static float X1 = 200, Y1 = 700, P1 = 2300, P12 = 3400;
+static float XG = 500, YG = 300, PG = 500, PG2 = 1100;
+static float XB = 800, YB = 300, PB = 800, PB2 = 1200;
+static float XE = 800, YE = 500, PE = 1300;
+static float XF = 200, YF = 500, PF = 1900, PF2 = 3200;
+static float X1 = 200, Y1 = 700, P1 = 2100, P12 = 3400;
 
 Route[] routes = {
-  new Route(P0, PA, X0, Y0, XA, YA),    // 0 - A
-  new Route(PA, PG, XA, YA, XG, YG),    // A - G
-  new Route(PG, PB, XG, YG, XB, YB),    // G - B
-  new Route(PB, PD, XB, YB, XD, YD),    // B - D
-  new Route(PD, PC, XD, YD, XC, YC),    // D - C
-  new Route(PC, PG2, XC, YC, XG, YG),   // C - G
-  new Route(PD2, PE, XD, YD, XE, YE),   // D - E
-  new Route(PE, PF, XE, YE, XF, YF),    // E - F
-  new Route(PF, P1, XF, YF, X1, Y1),    // F - 1
+  new Route(P0, PA, X0, Y0, XA, YA),        // 0 - A
+  new Route(PA, PG, XA, YA, XG, YG, true),  // A - G  // throw to g
+  new Route(PG, PB, XG, YG, XB, YB),        // G - B
+  new Route(PB, PG2, XB, YB, XG, YG, true), // B - G  // throw to g
+  new Route(PB2, PE, XB, YB, XE, YE),       // B - E
+  new Route(PE, PF, XE, YE, XF, YF),        // E - F
+  new Route(PF, P1, XF, YF, X1, Y1),        // F - 1
   // this next one is disjoint
   new Route(PA2, P12, XA, YA, X1, Y1),  // A - 1
 };
@@ -138,14 +128,19 @@ class Request {
   float x, y;
   boolean frozen = true;
   float lifetime;
-//  float rx, ry;
-//  float dx, dy;
   int index = 0;
+  PImage img;
 
-  Request(int i) {
+  Request() {
     init();
-    lifetime = i;
+    lifetime = 0;
     index = (int)random(10);
+    img = unknown;
+  }
+
+  Request(boolean frozen) {
+    this();
+    this.frozen = frozen;
   }
 
   void init() {
@@ -155,10 +150,6 @@ class Request {
     }
     x = INPUT_X;
     y = INPUT_Y;
- //   rx = random(TWO_PI);
- //   ry = random(TWO_PI);
- //   dx = random(-MAX_SPEED, MAX_SPEED);
- //   dy = random(-MAX_SPEED, MAX_SPEED);
     lifetime = 0;
   }
 
@@ -178,6 +169,7 @@ class Request {
     if (lifetime > 100 && lifetime <= 900 ) {
       if (random(1000) < 1) {
         frozen = false;
+        img = fire[index];
       }
     }
 
@@ -187,28 +179,28 @@ class Request {
       check1.on(frozen);
       if (!frozen) {
         lifetime = PA2;
+        img = fire[index];
+      } else {
+        img = ice[index];
       }
     }
-    // If at D and unfrozen move towards E
-    if (lifetime == PD) {
+    // If at B and unfrozen move towards E
+    if (lifetime == PB) {
       check2.on(frozen);
       if (!frozen) {
-        lifetime = PD2;
+        lifetime = PB2;
       }
     }
     // If at G then loop
     if (lifetime == PG2) {
       lifetime = PG;
     }
-  }
-
-  void draw() {
-    PImage img;
-    if (frozen) {
-      img = ice[index];
-    } else {
-      img = fire[index];
+    if (lifetime == PF || lifetime == PF2) {
+      img = green;
     }
+  }
+  
+  void draw() {
     pushMatrix();
     translate(x, y);
     rotate(5 * radians(sin(lifetime / 8.0)));
@@ -219,25 +211,42 @@ class Request {
 
 // these are the routes, now done as data
 class Route {
+  final float LOOP_HEIGHT = 300;
+
   float min, max, x0, x1, y0, y1;
   PVector p = new PVector();
+  boolean hyp;
   
   Route(float min, float max, float x0, float y0, float x1, float y1) {
+    this(min, max, x0, y0, x1, y1, false);
+  }
+  Route(float min, float max, float x0, float y0, float x1, float y1, boolean hyp) {
     this.min = min;
     this.max = max;
     this.x0 = x0;
     this.x1 = x1;
     this.y0 = y0;
     this.y1 = y1;
+    this.hyp = hyp;
   }
   
   // if the count is within the min max limits then map count to position
   PVector calc(float count) {
     if (count > min && count <= max) {
-      p.set(
-        map(count, min, max, x0, x1),
-        map(count, min, max, y0, y1)
-      );
+      if (hyp) {
+        // hyperbolic (actually, sin)
+        float angle = map(count, min, max, 0, PI);
+        p.set(
+          map(count, min, max, x0, x1),
+          map(count, min, max, y0, y1) - LOOP_HEIGHT * sin(angle)
+        );
+      } else {
+        // linear
+        p.set(
+          map(count, min, max, x0, x1),
+          map(count, min, max, y0, y1)
+        );
+      }
       return p;
     } else {
       return null;
@@ -278,7 +287,13 @@ class Check {
 void keyReleased() {
   if (key == ' ') {
     // more
-    requests.add(new Request(0));
+    requests.add(new Request());
+  } else if (key == 'f') {
+    // add a frozen one
+    requests.add(new Request(true));
+  } else if (key == 'u') {
+    // unfrozen one
+    requests.add(new Request(false));
   } else {
     // (un)pause
     pause = !pause;
